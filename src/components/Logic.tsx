@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Card } from "./CreateDeck";
-import ShowTie from "./ShowTie";
 import ShowCard from "./ShowCard";
 
 export function updateDecks(
