@@ -37,7 +37,6 @@ export function updateDecks(
   } else {
     // Handle the case if it's still a tie for the fourth cards (optional)
   }
-
   return [p1Deck, p2Deck];
 }
 

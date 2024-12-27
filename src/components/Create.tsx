@@ -3,6 +3,7 @@ import { useLocation, useHistory } from "react-router-dom";
 import { Card, createDeck } from "./CreateDeck";
 import ShowCard from "./ShowCard";
 import { compare, updateDecks } from "./Logic";
+import Action from "./Action";
 
 // Define the location type interface
 interface LocationState {
@@ -21,7 +22,7 @@ export const Create = () => {
   const [currentCardIndexP1, setCurrentCardIndexP1] = useState(0);
   const [currentCardIndexP2, setCurrentCardIndexP2] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [tie, setTie] = useState(false);
+  const [tie, setTie] = useState(0);
 
   // State to track lost and gained cards for both players
   const [lostCardsP1, setLostCardsP1] = useState<Card[]>([]);
@@ -36,11 +37,25 @@ export const Create = () => {
   const handleCardClickP1 = () => {
     setIsFlipped((prev) => {
       if (prev) {
-        if (compare(topCardP1, topCardP2) === 0 && tie === false) {
-          setTie(true);
+        if (compare(topCardP1, topCardP2) === 0 && tie === 0) {
+          setTie(1);
+          while (tie >= 1) {
+            if (
+              p1.length > currentCardIndexP1 + 4 * tie &&
+              p2.length > currentCardIndexP2 + 4 * tie
+            ) {
+              if (
+                p1[currentCardIndexP1 + 4 * tie] ===
+                p2[currentCardIndexP2 + 4 * tie]
+              ) {
+                setTie(tie + 1);
+              }
+            }
+          }
           return !prev;
         }
-        setTie(false);
+
+        setTie(0);
         const [updatedP1, updatedP2] = updateDecks(
           p1,
           p2,
@@ -104,25 +119,48 @@ export const Create = () => {
             tie ? (
               <div
                 onClick={handleCardClickP1}
-                style={{ display: "flex", alignItems: "center" }}
+                style={{
+                  display: "flex",
+                  flexDirection: "row", // Ensure cards are aligned horizontally
+                  justifyContent: "flex-start", // Align cards to the left
+                  alignItems: "center",
+                }}
               >
-                <div>
+                {/* First, render the top card, which should be on the left */}
+                <div style={{ marginRight: "5px" }}>
                   <ShowCard card={topCardP1} isFlipped={isFlipped} />
                 </div>
 
-                <ShowCard
-                  card={p1[currentCardIndexP1 + 3]}
-                  isFlipped={isFlipped}
-                />
+                {/* Render additional cards from p1 starting from the current index */}
+                {[...Array(tie)].map((_, index) => (
+                  <div key={index} style={{ marginRight: "5px" }}>
+                    <ShowCard
+                      card={p1[currentCardIndexP1 + (index + 1) * 3]}
+                      isFlipped={isFlipped}
+                    />
+                  </div>
+                ))}
               </div>
             ) : (
-              <div onClick={handleCardClickP1}>
-                <ShowCard card={topCardP1} isFlipped={isFlipped} />
+              <div
+                onClick={handleCardClickP1}
+                style={{
+                  display: "flex",
+                  flexDirection: "row", // Ensure cards are aligned horizontally
+                  justifyContent: "flex-start", // Align cards to the left
+                  alignItems: "center",
+                }}
+              >
+                {/* Only the top card displayed on the left */}
+                <div style={{ marginRight: "5px" }}>
+                  <ShowCard card={topCardP1} isFlipped={isFlipped} />
+                </div>
               </div>
             )
           ) : (
             <h4>No more cards!</h4>
           )}
+
           <h5 style={{ marginTop: "340px" }}>{player}</h5>
         </div>
 
@@ -132,19 +170,19 @@ export const Create = () => {
             p2.length - currentCardIndexP2
           }`}</h3>
           {topCardP2 ? (
-            tie ? (
+            <div style={{ display: "flex", alignItems: "center" }}>
+              {[...Array(tie)].map((_, index) => (
+                <div key={index}>
+                  <ShowCard
+                    card={p2[currentCardIndexP2 + (index + 1) * 3]}
+                    isFlipped={isFlipped}
+                  />
+                </div>
+              ))}
               <div style={{ display: "flex", alignItems: "center" }}>
-                <ShowCard
-                  card={p2[currentCardIndexP2 + 3]}
-                  isFlipped={isFlipped}
-                />
                 <ShowCard card={topCardP2} isFlipped={isFlipped} />
               </div>
-            ) : (
-              <div>
-                <ShowCard card={topCardP2} isFlipped={isFlipped} />
-              </div>
-            )
+            </div>
           ) : (
             <h4>No more cards!</h4>
           )}
